@@ -6,7 +6,16 @@ COPY . .
 
 RUN yarn install
 
-RUN apt update && \
-	apt install curl php-cli php-mbstring git unzip && \
-	curl -sS https://getcomposer.org/installer -o composer-setup.php
+# Install php5 & composer
+RUN apt-get update && \\
+    apt-get install curl php-cli php-mbstring php-zip php-dom \\
+            git unzip
+RUN curl -sS https://getcomposer.org/installer -o composer-setup.php && \\
+    php composer-setup.php --install-dir=/usr/local/bin --filename=composer && \\
+    rm composer-setup.php
 
+ENV COMPOSER_ALLOW_SUPERUSER=1 PATH=~/.composer/vendor/bin:$PATH
+
+RUN composer install
+RUN BACKGROUND php artisan serve --host 0.0.0.0 --port 80
+EXPOSE WEBSITE http://localhost:80
